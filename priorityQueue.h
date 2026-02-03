@@ -19,7 +19,9 @@ public:
     virtual Node<K,V>* insert(K key, V value) = 0;
     
     virtual pair<K,V> extract_min() = 0;
-    
+
+    virtual pair<K,V> find_min() = 0;
+
     virtual void decrease_key(Node<K,V>* node, K new_key) = 0;
     
     virtual bool is_empty() = 0;
