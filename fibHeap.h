@@ -1,3 +1,5 @@
+//interfaces to priorityQueue.h
+
 #ifndef FIBONACCI_HEAP_H
 #define FIBONACCI_HEAP_H
 
@@ -45,6 +47,7 @@ private:
         node->right->left = node->left;
     }
 
+    //tree y becomes child of tree x
     void link(FibNode<K,V>* y, FibNode<K,V>* x) {
         removeFromList(y);
 
@@ -62,8 +65,9 @@ private:
         x->degree++;
     }
 
+    //merge trees of same degree after extract_min
     void consolidate() {
-        int maxDegree = static_cast<int>(log2(nodeCount)) + 2;
+        int maxDegree = static_cast<int>(log2(nodeCount)) + 2; //formula for maximum possible degree of tree
         vector<FibNode<K,V>*> A(maxDegree, nullptr);
 
         vector<FibNode<K,V>*> roots;
@@ -117,6 +121,7 @@ private:
         }
     }
 
+    //remove child x from parent y
     void cut(FibNode<K,V>* x, FibNode<K,V>* y) {
         if (x->right == x) {
             y->child = nullptr;
@@ -135,6 +140,8 @@ private:
         insertIntoList(minNode, x);
     }
 
+    //cuts marked nodes
+    //node is cut if it loses first child
     void cascadingCut(FibNode<K,V>* y) {
         FibNode<K,V>* z = y->parent;
         if (z != nullptr) {
