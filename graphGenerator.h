@@ -11,7 +11,7 @@
 using namespace std;
 
 //random sparse graph
-inline Graph generateSparse(int n, bool directed, int multiplier = 3, int maxWeight = 1000) {
+inline Graph generateRandom(int n, bool directed, int targetEdges, int maxWeight = 1000) {
     Graph g(n, directed);
     mt19937 rng(67); //67
     uniform_int_distribution<int> weightDist(1, maxWeight); //random edge weight range
@@ -35,8 +35,7 @@ inline Graph generateSparse(int n, bool directed, int multiplier = 3, int maxWei
         edges.insert({min(u,v), max(u,v)});
     }
 
-    //add a ton of edges
-    int targetEdges = multiplier * n;
+    //add target edges (lot for dense, few for sparse)
     int currentEdges = n - 1;
 
     while (currentEdges < targetEdges) {
@@ -55,19 +54,47 @@ inline Graph generateSparse(int n, bool directed, int multiplier = 3, int maxWei
     return g;
 }
 
-//random dense graph
-inline Graph generateDense(int n, bool directed, int divisor = 4, int maxWeight = 1000) {
-    // TODO
-}
-
-//grid graph
+//grid
 inline Graph generateGrid(int rows, int cols, bool directed, int maxWeight = 1000) {
-    // TODO
+    int n = rows * cols;
+    Graph g(n, directed);
+    mt19937 rng(42);
+    uniform_int_distribution<int> weightDist(1, maxWeight);
+
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            int u = r * cols + c;
+
+            //connect to right neighbor
+            if (c + 1 < cols) {
+                g.add_edge(u, u + 1, weightDist(rng));
+            }
+
+            //connect to bottom neighbor
+            if (r + 1 < rows) {
+                g.add_edge(u, u + cols, weightDist(rng));
+            }
+        }
+    }
+
+    return g;
 }
 
 //worst case graph
+//uses this really weird concept i found online where there's a bunch of shortcuts 
+//that the algorithm discovers over time,
+//so it has to call a bunch of decreaseKey
 inline Graph generateWorstCase(int n, bool directed, int maxWeight = 1000) {
-    // TODO
+    Graph g(n, directed);
+
+    for (int i = 0; i < n - 1; i++) {
+        g.add_edge(i, i + 1, maxWeight);
+    }
+    for (int i = 2; i < n; i++) {
+        g.add_edge(0, i, maxWeight - i);
+    }
+
+    return g;
 }
 
 #endif
