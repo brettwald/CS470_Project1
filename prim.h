@@ -11,13 +11,13 @@
 
 struct PrimResult {
     long long total_weight = 0;
-    std::vector<int> parent;      // parent[v] in MST, -1 for root or disconnected
-    std::vector<long long> key;   // key[v] = weight of edge connecting v to MST (0 for start vertex)
-    bool connected = true;        // false if graph is disconnected (MST does not span all vertices)
+    std::vector<int> parent;      //parent[v] in MST, -1 for root or disconnected
+    std::vector<long long> key;   //weight of edge connecting v to MST
+    bool connected = true;        //false if graph is disconnected
 };
 
-// Prim: Minimum Spanning Tree (assumes undirected graph)
-// If graph is disconnected, returns a spanning forest and sets connected=false.
+//minimum spanning tree using prim's algorithm
+//returns spanning forest if graph is disconnected
 inline PrimResult prim_mst(const Graph& g, int start, PriorityQueue<long long, int>& pq) {
     const int n = g.num_vertices();
     if (start < 0 || start >= n) throw std::out_of_range("prim_mst: start out of range");
@@ -32,7 +32,7 @@ inline PrimResult prim_mst(const Graph& g, int start, PriorityQueue<long long, i
     std::vector<bool> inMST(n, false);
     std::vector<Node<long long, int>*> handle(n, nullptr);
 
-    // Insert all vertices with INF, then decrease start to 0
+    //insert all vertices with INF then decrease start to 0
     for (int v = 0; v < n; ++v) {
         handle[v] = pq.insert(INF, v);
     }
@@ -46,21 +46,19 @@ inline PrimResult prim_mst(const Graph& g, int start, PriorityQueue<long long, i
         auto [ku, u] = pq.extract_min();
 
         if (ku >= INF) {
-            // Remaining vertices are disconnected from the growing tree
+            //remaining vertices disconnected
             break;
         }
 
         if (inMST[u]) {
-            // Should not happen with "insert all once" strategy, but safe guard.
             continue;
         }
 
         inMST[u] = true;
         picked++;
-
-        // Add edge weight to total unless it's the start node (key 0)
         total += ku;
 
+        //check neighbors and update keys
         for (const auto& e : g.neighbors(u)) {
             const int v = e.to;
             const long long w = static_cast<long long>(e.weight);

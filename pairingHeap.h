@@ -1,7 +1,5 @@
-// pairingHeap.h
+//interfaces to priorityQueue.h
 
-//first verion created by ChatGPT based on priorityQueue.h interface and fibHeap.h implementation
-//Will update and test over weekend when I have more time, just wanted to get something down for now.
 #ifndef PAIRING_HEAP_H
 #define PAIRING_HEAP_H
 
@@ -14,7 +12,7 @@ template <typename K, typename V>
 struct PairNode : public Node<K, V> {
     PairNode* child;
     PairNode* next;
-    PairNode* prev; // parent if first child, otherwise left sibling
+    PairNode* prev; //points to parent if first child, otherwise left sibling
 
     PairNode(const K& k, const V& v)
         : child(nullptr), next(nullptr), prev(nullptr) {
@@ -29,6 +27,7 @@ private:
     PairNode<K, V>* root_;
     int nodeCount_;
 
+    //combines two heaps, smaller root becomes parent
     static PairNode<K, V>* meld(PairNode<K, V>* a, PairNode<K, V>* b) {
         if (!a) return b;
         if (!b) return a;
@@ -39,33 +38,32 @@ private:
             b = tmp;
         }
 
-        // Attach b as first child of a
+        //attach b as first child of a
         b->prev = a;
         b->next = a->child;
         if (a->child) {
-            a->child->prev = b; // old first child's left sibling becomes b
+            a->child->prev = b;
         }
         a->child = b;
 
         return a;
     }
 
+    //detach node from its parent or left sibling
     static void cutFromParentOrSibling(PairNode<K, V>* x) {
         if (!x || !x->prev) return;
 
         PairNode<K, V>* p = x->prev;
 
-        // If p is parent, then p->child == x.
-        // Otherwise p is left sibling, and p->next == x.
         if (p->child == x) {
             p->child = x->next;
             if (x->next) {
-                x->next->prev = p; // new first child's prev becomes parent
+                x->next->prev = p;
             }
         } else {
             p->next = x->next;
             if (x->next) {
-                x->next->prev = p; // next sibling's left sibling becomes p
+                x->next->prev = p;
             }
         }
 
@@ -73,13 +71,15 @@ private:
         x->next = nullptr;
     }
 
+    //two pass pairing used after extract_min
+    //pass 1: meld pairs left to right
+    //pass 2: meld results right to left
     static PairNode<K, V>* twoPassMerge(PairNode<K, V>* firstSibling) {
         if (!firstSibling) return nullptr;
 
         std::vector<PairNode<K, V>*> merged;
         PairNode<K, V>* cur = firstSibling;
 
-        // Pass 1: pairwise meld left-to-right
         while (cur) {
             PairNode<K, V>* a = cur;
             PairNode<K, V>* b = cur->next;
@@ -99,7 +99,6 @@ private:
             cur = nextPair;
         }
 
-        // Pass 2: fold right-to-left
         PairNode<K, V>* res = nullptr;
         for (int i = static_cast<int>(merged.size()) - 1; i >= 0; --i) {
             res = meld(res, merged[i]);
@@ -107,6 +106,7 @@ private:
         return res;
     }
 
+    //recursively delete all nodes
     static void deleteAll(PairNode<K, V>* n) {
         if (!n) return;
         PairNode<K, V>* c = n->child;
@@ -151,10 +151,10 @@ public:
 
         PairNode<K, V>* children = oldRoot->child;
         if (children) {
-            children->prev = nullptr; // detach first child's parent link
+            children->prev = nullptr;
         }
 
-        // Important: detach old root from its children so deleteAll won't follow them
+        //detach old root so delete doesnt follow children
         oldRoot->child = nullptr;
 
         root_ = twoPassMerge(children);
@@ -171,6 +171,7 @@ public:
 
         x->key = new_key;
 
+        //if not root, cut and meld back in
         if (x != root_ && x->prev) {
             cutFromParentOrSibling(x);
             root_ = meld(root_, x);
