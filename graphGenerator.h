@@ -81,17 +81,20 @@ inline Graph generateGrid(int rows, int cols, bool directed, int maxWeight = 100
 }
 
 //worst case graph
-//uses this really weird concept i found online where there's a bunch of shortcuts 
-//that the algorithm discovers over time,
-//so it has to call a bunch of decreaseKey
+//uses this weird concept i found online 
+//skip edges give bad distances first
+//chain gives better distances after, forcing decrease-key
 inline Graph generateWorstCase(int n, bool directed, int maxWeight = 1000) {
     Graph g(n, directed);
 
     for (int i = 0; i < n - 1; i++) {
-        g.add_edge(i, i + 1, maxWeight);
+        g.add_edge(i, i + 1, 1);
     }
-    for (int i = 2; i < n; i++) {
-        g.add_edge(0, i, maxWeight - i);
+
+    for (int skip = 2; skip <= 10; skip++) {
+        for (int i = 0; i < n - skip; i++) {
+            g.add_edge(i, i + skip, skip + 1);
+        }
     }
 
     return g;
