@@ -132,6 +132,7 @@ public:
     }
 
     Node<K, V>* insert(K key, V value) override {
+        this->insertCount++;
         PairNode<K, V>* n = new PairNode<K, V>(key, value);
         root_ = meld(root_, n);
         nodeCount_++;
@@ -144,6 +145,7 @@ public:
     }
 
     std::pair<K, V> extract_min() override {
+        this->extractCount++;
         if (!root_) throw std::runtime_error("Heap is empty");
 
         PairNode<K, V>* oldRoot = root_;
@@ -165,6 +167,7 @@ public:
     }
 
     void decrease_key(Node<K, V>* node, K new_key) override {
+        this->decreaseKeyCount++;
         PairNode<K, V>* x = static_cast<PairNode<K, V>*>(node);
         if (!x) throw std::runtime_error("Null node handle");
         if (new_key > x->key) throw std::runtime_error("New key is greater than current key");

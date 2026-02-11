@@ -16,6 +16,10 @@ template<typename K, typename V>
 class PriorityQueue {
 public:
 
+    int insertCount = 0;
+    int extractCount = 0;
+    int decreaseKeyCount = 0;
+
     virtual Node<K,V>* insert(K key, V value) = 0;
     
     virtual pair<K,V> extract_min() = 0;

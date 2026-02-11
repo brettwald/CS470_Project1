@@ -180,6 +180,7 @@ public:
     }
 
     Node<K,V>* insert(K key, V value) override {
+        this->insertCount++;
         FibNode<K,V>* node = new FibNode<K,V>(key, value);
 
         if (minNode == nullptr) {
@@ -203,6 +204,7 @@ public:
     }
 
     pair<K,V> extract_min() override {
+        this->extractCount++;
         if (minNode == nullptr) {
             throw runtime_error("Heap is empty");
         }
@@ -236,6 +238,7 @@ public:
     }
 
     void decrease_key(Node<K,V>* node, K new_key) override {
+        this->decreaseKeyCount++;
         FibNode<K,V>* x = static_cast<FibNode<K,V>*>(node);
 
         if (new_key > x->key) {

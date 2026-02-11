@@ -11,37 +11,66 @@
 
 using namespace std;
 
+struct BenchResult {
+    double time_ms;
+    int inserts;
+    int extracts;
+    int decreaseKeys;
+};
+
 //run dijkstra and time it
 //pass "fibonacci" or "pairing" for heapType
-double timeDijkstra(const Graph& g, int source, const string& heapType) {
-    auto start = chrono::high_resolution_clock::now();
+BenchResult runDijkstra(const Graph& g, int source, const string& heapType) {
+    BenchResult res;
 
     if (heapType == "fibonacci") {
         FibonacciHeap<long long, int> pq;
+        auto start = chrono::high_resolution_clock::now();
         dijkstra(g, source, pq);
+        auto end = chrono::high_resolution_clock::now();
+        res.time_ms = chrono::duration<double, milli>(end - start).count();
+        res.inserts = pq.insertCount;
+        res.extracts = pq.extractCount;
+        res.decreaseKeys = pq.decreaseKeyCount;
     } else {
         PairingHeap<long long, int> pq;
+        auto start = chrono::high_resolution_clock::now();
         dijkstra(g, source, pq);
+        auto end = chrono::high_resolution_clock::now();
+        res.time_ms = chrono::duration<double, milli>(end - start).count();
+        res.inserts = pq.insertCount;
+        res.extracts = pq.extractCount;
+        res.decreaseKeys = pq.decreaseKeyCount;
     }
 
-    auto end = chrono::high_resolution_clock::now();
-    return chrono::duration<double, milli>(end - start).count();
+    return res;
 }
 
 //same thing but for prim
-double timePrim(const Graph& g, int source, const string& heapType) {
-    auto start = chrono::high_resolution_clock::now();
+BenchResult runPrim(const Graph& g, int source, const string& heapType) {
+    BenchResult res;
 
     if (heapType == "fibonacci") {
         FibonacciHeap<long long, int> pq;
+        auto start = chrono::high_resolution_clock::now();
         prim_mst(g, source, pq);
+        auto end = chrono::high_resolution_clock::now();
+        res.time_ms = chrono::duration<double, milli>(end - start).count();
+        res.inserts = pq.insertCount;
+        res.extracts = pq.extractCount;
+        res.decreaseKeys = pq.decreaseKeyCount;
     } else {
         PairingHeap<long long, int> pq;
+        auto start = chrono::high_resolution_clock::now();
         prim_mst(g, source, pq);
+        auto end = chrono::high_resolution_clock::now();
+        res.time_ms = chrono::duration<double, milli>(end - start).count();
+        res.inserts = pq.insertCount;
+        res.extracts = pq.extractCount;
+        res.decreaseKeys = pq.decreaseKeyCount;
     }
 
-    auto end = chrono::high_resolution_clock::now();
-    return chrono::duration<double, milli>(end - start).count();
+    return res;
 }
 
 //count edges, undirected edges get counted twice so divide by 2
@@ -55,7 +84,7 @@ int countEdges(const Graph& g, bool directed) {
 
 int main() {
     //csv header
-    cout << "algorithm,heap,graph_type,n,edges,time_ms" << endl;
+    cout << "algorithm,heap,graph_type,n,edges,time_ms,inserts,extracts,decrease_keys" << endl;
 
     vector<int> sizes = {1000, 5000, 10000, 50000};
     vector<string> heaps = {"fibonacci", "pairing"};
@@ -73,32 +102,32 @@ int main() {
 
         //dijkstra tests
         for (const string& heap : heaps) {
-            double t;
+            BenchResult r;
 
-            t = timeDijkstra(sparseDi, 0, heap);
-            cout << "dijkstra," << heap << ",sparse," << n << "," << countEdges(sparseDi, true) << "," << t << endl;
+            r = runDijkstra(sparseDi, 0, heap);
+            cout << "dijkstra," << heap << ",sparse," << n << "," << countEdges(sparseDi, true) << "," << r.time_ms << "," << r.inserts << "," << r.extracts << "," << r.decreaseKeys << endl;
 
-            t = timeDijkstra(denseDi, 0, heap);
-            cout << "dijkstra," << heap << ",dense," << n << "," << countEdges(denseDi, true) << "," << t << endl;
+            r = runDijkstra(denseDi, 0, heap);
+            cout << "dijkstra," << heap << ",dense," << n << "," << countEdges(denseDi, true) << "," << r.time_ms << "," << r.inserts << "," << r.extracts << "," << r.decreaseKeys << endl;
 
             int gridN = gridSide * gridSide;
-            t = timeDijkstra(gridDi, 0, heap);
-            cout << "dijkstra," << heap << ",grid," << gridN << "," << countEdges(gridDi, true) << "," << t << endl;
+            r = runDijkstra(gridDi, 0, heap);
+            cout << "dijkstra," << heap << ",grid," << gridN << "," << countEdges(gridDi, true) << "," << r.time_ms << "," << r.inserts << "," << r.extracts << "," << r.decreaseKeys << endl;
         }
 
         //prim tests
         for (const string& heap : heaps) {
-            double t;
+            BenchResult r;
 
-            t = timePrim(sparseUn, 0, heap);
-            cout << "prim," << heap << ",sparse," << n << "," << countEdges(sparseUn, false) << "," << t << endl;
+            r = runPrim(sparseUn, 0, heap);
+            cout << "prim," << heap << ",sparse," << n << "," << countEdges(sparseUn, false) << "," << r.time_ms << "," << r.inserts << "," << r.extracts << "," << r.decreaseKeys << endl;
 
-            t = timePrim(denseUn, 0, heap);
-            cout << "prim," << heap << ",dense," << n << "," << countEdges(denseUn, false) << "," << t << endl;
+            r = runPrim(denseUn, 0, heap);
+            cout << "prim," << heap << ",dense," << n << "," << countEdges(denseUn, false) << "," << r.time_ms << "," << r.inserts << "," << r.extracts << "," << r.decreaseKeys << endl;
 
             int gridN = gridSide * gridSide;
-            t = timePrim(gridUn, 0, heap);
-            cout << "prim," << heap << ",grid," << gridN << "," << countEdges(gridUn, false) << "," << t << endl;
+            r = runPrim(gridUn, 0, heap);
+            cout << "prim," << heap << ",grid," << gridN << "," << countEdges(gridUn, false) << "," << r.time_ms << "," << r.inserts << "," << r.extracts << "," << r.decreaseKeys << endl;
         }
     }
 
